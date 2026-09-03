@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arcoer Nexus — Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<style>
+  :root{
+    --bg:#05040c; --bg2:#0b0918; --panel:#100d20cc;
+    --ink:#ece9f5; --dim:#a9a3c4; --faint:#6f6a8c;
+    --star:#5BE7C4; --gem:#A855F7; --gold:#FFD678;
+    --line:#221c3d;
+    --star-glow:#5BE7C433; --gem-glow:#A855F733; --gold-glow:#FFD67833;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:'Outfit',system-ui,sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:var(--star);text-decoration:none}
+  code,.mono{font-family:'Space Mono',monospace}
+
+  /* faint starfield fixed behind everything */
+  .sky{position:fixed;inset:0;z-index:-2;background:
+    radial-gradient(ellipse at 50% 0%, #140f2e 0%, var(--bg) 60%)}
+  .sky b{position:absolute;top:0;left:0;width:2px;height:2px;border-radius:50%;background:transparent}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* ── nav ── */
+  nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(12px);
+    background:#05040cd0;border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:22px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em;margin-right:auto}
+  .brand svg{width:26px;height:26px;filter:drop-shadow(0 0 6px var(--star-glow))}
+  nav a{color:var(--dim);font-size:14px;font-weight:500}
+  nav a:hover{color:var(--ink)}
+  @media(max-width:720px){nav a.hidesm{display:none}}
+
+  /* ── hero ── */
+  header{position:relative;padding:64px 0 40px}
+  .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+  @media(max-width:860px){.hero-grid{grid-template-columns:1fr;gap:24px}}
+  .hero-copy h1{font-size:clamp(40px,7vw,72px);font-weight:800;line-height:.98;letter-spacing:-.01em}
+  .hero-copy h1 .n{font-weight:200;color:var(--gold);display:block;letter-spacing:.04em}
+  .hero-copy h1 .a{color:var(--gold);text-shadow:0 0 26px var(--gold-glow)}
+  .lede{color:var(--dim);font-size:19px;margin-top:20px;max-width:46ch}
+  .herometa{display:flex;gap:26px;margin-top:28px;flex-wrap:wrap}
+  .herometa div{display:flex;flex-direction:column}
+  .herometa .num{font-size:26px;font-weight:700;color:var(--star)}
+  .herometa .lbl{font-size:12.5px;color:var(--faint);letter-spacing:.04em}
+
+  /* 3D viewer */
+  .viewer{position:relative;width:100%;aspect-ratio:1;border:1px solid var(--line);border-radius:18px;
+    background:radial-gradient(ellipse at 50% 40%, #17123a 0%, #08061a 70%);overflow:hidden;
+    box-shadow:0 0 60px #0008, inset 0 0 60px #0006}
+  model-viewer{width:100%;height:100%;--poster-color:transparent;background:transparent}
+  .viewer-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:30px;gap:14px;color:var(--dim)}
+  .viewer-empty .gemmark{width:80px;height:80px;opacity:.9;filter:drop-shadow(0 0 16px var(--star-glow));animation:spin 14s linear infinite}
+  .viewer-empty h3{color:var(--ink);font-weight:600;font-size:17px}
+  .viewer-empty p{font-size:13.5px;max-width:34ch}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .btn{font-family:inherit;font-size:13.5px;font-weight:600;color:var(--ink);background:#1b1636;
+    border:1px solid var(--line);border-radius:9px;padding:9px 15px;cursor:pointer;transition:border-color .2s,background .2s}
+  .btn:hover{border-color:var(--gem);background:#241d47}
+  .btn.on{border-color:var(--star);color:var(--star)}
+  .viewer-tools{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;z-index:5}
+  .viewer-hint{position:absolute;right:12px;top:12px;font-size:11.5px;color:var(--faint);
+    background:#05040caa;padding:4px 9px;border-radius:6px;border:1px solid var(--line)}
+
+  /* hotspot buttons on the model */
+  .hs{--r:13px;width:var(--r);height:var(--r);border-radius:50%;border:2px solid var(--star);
+    background:#05040c;box-shadow:0 0 0 4px #5be7c433, 0 0 12px var(--star-glow);cursor:pointer;
+    position:relative;padding:0}
+  .hs::after{content:"";position:absolute;inset:2px;border-radius:50%;background:var(--star);opacity:.9;
+    animation:hspulse 2s ease-in-out infinite}
+  .hs[data-active]{border-color:var(--gold);box-shadow:0 0 0 4px #ffd67833,0 0 14px var(--gold-glow)}
+  .hs-label{position:absolute;left:20px;top:50%;transform:translateY(-50%);white-space:nowrap;
+    background:#0b0918e8;border:1px solid var(--line);border-radius:8px;padding:7px 11px;
+    font-size:12.5px;color:var(--ink);pointer-events:none;opacity:0;transition:opacity .18s}
+  .hs:hover .hs-label,.hs[data-active] .hs-label{opacity:1}
+
+  /* ── sections ── */
+  section{padding:60px 0;border-top:1px solid var(--line)}
+  .eyebrow{font-size:13px;font-weight:600;color:var(--star);letter-spacing:.02em;margin-bottom:8px}
+  h2{font-size:clamp(28px,4vw,40px);font-weight:700;line-height:1.1;letter-spacing:-.01em}
+  .sub{color:var(--dim);font-size:17px;margin-top:14px;max-width:64ch}
+  p.body{color:var(--dim);margin-top:16px;max-width:66ch}
+  p.body b{color:var(--ink);font-weight:600}
+
+  /* subsystem cards — varied, not identical */
+  .subsys{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:34px}
+  @media(max-width:720px){.subsys{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:14px;padding:24px;background:linear-gradient(160deg,#0d0a1e,#0907140)}
+  .card .tag{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px;margin-bottom:12px}
+  .card h3{font-size:20px;font-weight:600}
+  .card p{color:var(--dim);font-size:14.5px;margin-top:8px}
+  .card ul{list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:7px}
+  .card li{font-size:13.5px;color:var(--dim);padding-left:16px;position:relative}
+  .card li::before{content:"";position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--accent,var(--star))}
+
+  /* architecture chips */
+  .chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+  .chip{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#0c0a1c;min-width:150px;flex:1}
+  .chip .k{font-family:'Space Mono',monospace;font-size:12px;color:var(--gem)}
+  .chip .v{font-weight:600;margin-top:4px}
+  .chip .d{font-size:12.5px;color:var(--faint);margin-top:4px}
+
+  /* spec table */
+  table{width:100%;border-collapse:collapse;margin-top:30px;font-size:14.5px}
+  th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line)}
+  th{color:var(--faint);font-weight:600;font-size:12.5px;letter-spacing:.03em}
+  td:first-child{color:var(--dim);width:38%}
+  td b{color:var(--ink)}
+
+  /* tree section embed */
+  .treebox{margin-top:30px;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 40%,#140f2e,#06040f);aspect-ratio:16/9;position:relative}
+  .treebox iframe{width:100%;height:100%;border:0;display:block}
+  .treebox .fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:13px}
+
+  footer{padding:50px 0 70px;border-top:1px solid var(--line);color:var(--faint);font-size:13.5px}
+  .sponsor{display:flex;align-items:center;gap:10px;margin-top:16px;color:var(--dim)}
+  .sponsor b{color:var(--gold)}
+
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes hspulse{0%,100%{transform:scale(.7);opacity:.9}50%{transform:scale(1);opacity:.4}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+#room3d{margin:0;padding:0;box-sizing:border-box}#room3d, #room3d{width:100%;height:100%;overflow:hidden;background:#05040c;font-family:'Outfit',system-ui,sans-serif}#room3d #app{position:fixed;inset:0}#room3d canvas{display:block}#room3d .ui{position:fixed;z-index:10;color:#ece9f5;pointer-events:none}#room3d .hint{top:20px;left:0;right:0;text-align:center;font-size:15px;color:#c9c4e0}#room3d .hint b{color:#FFD678}#room3d .badge{position:fixed;top:18px;left:20px;font-weight:700;font-size:15px;color:#ece9f5;
+    display:flex;align-items:center;gap:8px;z-index:10}#room3d .badge svg{width:22px;height:22px;filter:drop-shadow(0 0 6px #5be7c4aa)}#room3d .btns{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:10px}#room3d .btn{font-family:inherit;font-size:13px;font-weight:600;color:#ece9f5;background:#1b1636cc;
+    border:1px solid #2a2348;border-radius:9px;padding:9px 15px;cursor:pointer;backdrop-filter:blur(6px);pointer-events:auto}#room3d .btn:hover{border-color:#A855F7;background:#241d47cc}#room3d .flashcard{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);z-index:12;
+    background:#0b0918ee;border:1px solid #2a2348;border-radius:14px;padding:20px 34px;text-align:center;
+    opacity:0;transition:.3s;pointer-events:none;backdrop-filter:blur(8px)}#room3d .flashcard.show{opacity:1;transform:translate(-50%,-50%) scale(1)}#room3d .flashcard .lbl{font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:#a9a3c4}#room3d .flashcard .nm{font-size:34px;font-weight:800;margin:4px 0}#room3d .flashcard .st{font-size:12px;letter-spacing:.25em;text-transform:uppercase}#room3d .loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:20;
+    background:#05040c;color:#a9a3c4;font-size:14px;gap:12px;flex-direction:column}#room3d .loading svg{width:54px;height:54px;animation:spin 3s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+
+
+  #room3d{position:relative;width:100%;height:640px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#05040c}
+  #room3d .badge{position:absolute}
+  #room3d .btns{position:absolute}
+  #room3d .ui{position:absolute}
+  #room3d canvas{width:100%!important;height:100%!important;display:block}
+
+</style>
+</head>
+<body>
+<div class="sky" id="sky"></div>
+
+<nav><div class="wrap">
+  <span class="brand">
+    <svg viewBox="0 0 40 40"><polygon points="20,2 26,14 38,20 26,26 20,38 14,26 2,20 14,14" fill="none" stroke="#5BE7C4" stroke-width="2.5" stroke-linejoin="round"/></svg>
+    Arcoer Nexus
+  </span>
+  <a href="#overview">Overview</a>
+  <a href="#model" class="hidesm">3D Model</a>
+  <a href="#architecture" class="hidesm">Architecture</a>
+  <a href="#subsystems">Subsystems</a>
+  <a href="#tree" class="hidesm">Tree</a>
+  <a href="#specs">Specs</a>
+</div></nav>
+
+<header><div class="wrap">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <h1><span class="a">Arcoer</span><span class="n">Nexus</span></h1>
+      <p class="lede">A K-pop desk companion that reads member tokens, lights 66 LEDs across fourteen elements, and syncs with an ARMY Bomb — driven by five processors and a custom 16&nbsp;MB board.</p>
+      <div class="herometa">
+        <div><span class="num">14</span><span class="lbl">member elements</span></div>
+        <div><span class="num">5</span><span class="lbl">firmware targets</span></div>
+        <div><span class="num">66</span><span class="lbl">addressable LEDs</span></div>
+        <div><span class="num">480×320</span><span class="lbl">TFT display</span></div>
+      </div>
+    </div>
+
+    <div class="viewer" id="viewerBox">
+      <model-viewer id="mv" camera-controls touch-action="pan-y" auto-rotate
+        rotation-per-second="18deg" exposure="1.05" shadow-intensity="0.9"
+        interaction-prompt="none" ar ar-modes="webxr scene-viewer quick-look" style="display:none">
+        <!-- Hotspots: reposition data-position/data-normal to match your model -->
+        <button class="hs" slot="hotspot-1" data-position="0 0.35 0.18" data-normal="0 0 1"
+          onclick="pickHS(this,'The 3.5&quot; ST7796 TFT — the gem/star UI, member cards, and mode screens live here.')">
+          <span class="hs-label">Display · ST7796</span></button>
+        <button class="hs" slot="hotspot-2" data-position="0.2 0.1 0.2" data-normal="1 0 0"
+          onclick="pickHS(this,'SK9822 LED strips — 66 addressable LEDs light each element in its member colour.')">
+          <span class="hs-label">LEDs · SK9822</span></button>
+        <button class="hs" slot="hotspot-3" data-position="0 -0.1 0.22" data-normal="0 0 1"
+          onclick="pickHS(this,'PN532 NFC reader — detects which member token is placed on the deck.')">
+          <span class="hs-label">NFC · PN532</span></button>
+        <button class="hs" slot="hotspot-4" data-position="-0.2 0.05 0.15" data-normal="-1 0 0"
+          onclick="pickHS(this,'Turntable + tonearm — the vinyl mode spins a grooved record on screen and in hardware.')">
+          <span class="hs-label">Vinyl deck</span></button>
+      </model-viewer>
+
+      <div class="viewer-empty" id="viewerEmpty">
+        <svg class="gemmark" viewBox="0 0 40 40"><polygon points="20,2 26,14 38,20 26,26 20,38 14,26 2,20 14,14" fill="none" stroke="#5BE7C4" stroke-width="2" stroke-linejoin="round"/></svg>
+        <h3>Load the 3D model</h3>
+        <p>Drop your Fusion export (<span class="mono">.glb</span>) to explore it — rotate, zoom, and tap the hotspots.</p>
+        <div class="btnrow">
+          <button class="btn" onclick="document.getElementById('glbFile').click()">Load .glb file</button>
+        </div>
+        <input type="file" id="glbFile" accept=".glb,.gltf" hidden>
+        <p style="font-size:12px;color:var(--faint)">Or place a file named <span class="mono">arcoer.glb</span> next to this page and it loads automatically.</p>
+      </div>
+
+      <div class="viewer-tools" id="viewerTools" style="display:none">
+        <button class="btn" id="explodeBtn">Exploded view</button>
+        <button class="btn" id="spinBtn">Auto-rotate</button>
+      </div>
+      <div class="viewer-hint" id="viewerHint" style="display:none">drag to rotate · scroll to zoom</div>
+    </div>
+  </div>
+</div></header>
+
+<section id="overview"><div class="wrap">
+  <div class="eyebrow">What it is</div>
+  <h2>A physical home for a digital fandom.</h2>
+  <p class="body">Arcoer Nexus turns a collection of fourteen NFC member tokens into a living desk piece. Place a token and its element wakes — the display shows the member's card, LEDs bloom in that member's colour, and the whole board reacts. It plays music over Bluetooth, spins records in a vinyl mode, and mirrors its light show onto an <b>ARMY Bomb Ver. 4</b> lightstick over the air. Everything is custom: the enclosure, the PCB, the firmware across five processors, and the gem-and-star interface language you see throughout.</p>
+</div></section>
+
+<section id="try"><div class="wrap">
+  <div class="eyebrow">Try it</div>
+  <h2>Build the Tree yourself.</h2>
+  <p class="sub">Orbit the device, open a box, and click an element — it flies out and connects to a slot. The device screen mirrors the Tree of Arcoer live: each element flashes connected, settles to purple, and the constellation links up as more are placed. Switch the screen between the BTS and CORTIS sides.</p>
+  <div id="room3d">
+
+
+<div class="badge">
+  <svg viewBox="0 0 40 40"><polygon points="20,2 26,14 38,20 26,26 20,38 14,26 2,20 14,14" fill="none" stroke="#5BE7C4" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  Arcoer Nexus
+</div>
+<div class="ui hint" id="hint">Drag to orbit · scroll to zoom · click a <b>box</b> to look inside</div>
+<div class="btns">
+  <button class="btn" id="sideBtn">Screen: BTS side</button>
+  <button class="btn" id="backBtn" style="display:none">← Back out</button>
+  <button class="btn" id="resetBtn">Reset view</button>
+</div>
+<div class="flashcard" id="flash"><div class="lbl">Element</div><div class="nm" id="flashNm">—</div><div class="st" id="flashSt">Connected</div></div>
+<div class="loading" id="loading">
+  <svg viewBox="0 0 40 40"><polygon points="20,2 26,14 38,20 26,26 20,38 14,26 2,20 14,14" fill="none" stroke="#5BE7C4" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  Loading 3D room…
+</div>
+
+
+  </div>
+</div></section>
+
+<section id="model"><div class="wrap">
+  <div class="eyebrow">Interactive model</div>
+  <h2>Explore the real build.</h2>
+  <p class="sub">This is the actual Fusion 360 model. Drag to orbit, scroll to zoom, and tap a marker to learn what each part does. Switch to the exploded view to see how it comes apart.</p>
+  <p class="body" style="font-size:13.5px;color:var(--faint)">Setup: export <span class="mono">arcoer.glb</span> (assembled) and optionally <span class="mono">arcoer_exploded.glb</span> from Fusion, place them beside this file. Adjust each hotspot's <span class="mono">data-position</span> in the code to sit on the right component.</p>
+</div></section>
+
+<section id="architecture"><div class="wrap">
+  <div class="eyebrow">System architecture</div>
+  <h2>Five processors, one nervous system.</h2>
+  <p class="sub">Work is split across dedicated chips so no single processor stalls the display, the audio, or the token reads. They talk over a small internal bridge protocol.</p>
+  <div class="chips">
+    <div class="chip"><div class="k">ESP32-S3</div><div class="v">Main UI &amp; brain</div><div class="d">LVGL 8.3 on the TFT, Wi-Fi, MQTT, orchestration</div></div>
+    <div class="chip"><div class="k">ESP32-WROOM</div><div class="v">Audio engine</div><div class="d">Bluetooth A2DP sink, SD WAV playback, I²S DSP</div></div>
+    <div class="chip"><div class="k">2× Pico W</div><div class="v">Token bridges</div><div class="d">Manage the physical token slots and hand-off</div></div>
+    <div class="chip"><div class="k">14× ATtiny85</div><div class="v">The tokens</div><div class="d">One chip per member token, identifies its element</div></div>
+    <div class="chip"><div class="k">WROOM bridge</div><div class="v">Lightstick link</div><div class="d">Standalone ESP-NOW radio to the ARMY Bomb</div></div>
+  </div>
+</div></section>
+
+<section id="subsystems"><div class="wrap">
+  <div class="eyebrow">Subsystems</div>
+  <h2>Every element, in detail.</h2>
+  <div class="subsys">
+    <div class="card" style="--accent:var(--star)">
+      <span class="tag" style="background:#5be7c422;color:var(--star)">Display &amp; UI</span>
+      <h3>The gem interface</h3>
+      <p>A 480×320 ST7796 panel runs LVGL 8.3 with the custom Tree-of-Arcoer visual language — gems, orbiting stars, and fading trails.</p>
+      <ul>
+        <li>Boot spinner with orbiting gem + star and comet trails</li>
+        <li>Per-member element cards with decoding animations</li>
+        <li>Mode screens: BTS, CORTIS, All Artists, Bluetooth, Vinyl</li>
+        <li>Custom 16&nbsp;MB partition to maximise app space</li>
+      </ul>
+    </div>
+    <div class="card" style="--accent:var(--gem)">
+      <span class="tag" style="background:#a855f722;color:var(--gem)">Audio</span>
+      <h3>Bluetooth &amp; vinyl sound</h3>
+      <p>A dedicated ESP32-WROOM handles all sound so the UI never stutters — streaming or playing from the SD card.</p>
+      <ul>
+        <li>Bluetooth A2DP sink for streaming from a phone</li>
+        <li>WAV playback from SD over I²S to a MAX98357A amp</li>
+        <li>Vinyl / turntable mode with a spinning grooved record</li>
+      </ul>
+    </div>
+    <div class="card" style="--accent:var(--gold)">
+      <span class="tag" style="background:#ffd67822;color:var(--gold)">Lighting</span>
+      <h3>66 addressable LEDs</h3>
+      <p>SK9822 strips light every element in its member colour, driven with FastLED and a learned power ceiling to avoid brownouts.</p>
+      <ul>
+        <li>Each of 14 elements has its own colour identity</li>
+        <li>Blink → settle-to-purple → celebration colour cycle</li>
+        <li>Power budget tuned to a safe 1000&nbsp;mA ceiling</li>
+      </ul>
+    </div>
+    <div class="card" style="--accent:#FF9329">
+      <span class="tag" style="background:#ff932922;color:#FF9329">Tokens</span>
+      <h3>NFC member reads</h3>
+      <p>A PN532 reader detects which of the fourteen ATtiny85 member tokens is placed, and the matching element comes alive.</p>
+      <ul>
+        <li>One ATtiny85 per physical member token</li>
+        <li>Two Pico W bridges manage the slot hand-off</li>
+        <li>Placing a token wakes its card, colour, and lights</li>
+      </ul>
+    </div>
+    <div class="card" style="--accent:#39FF14">
+      <span class="tag" style="background:#39ff1422;color:#39FF14">Sync</span>
+      <h3>ARMY Bomb Ver. 4</h3>
+      <p>A standalone WROOM bridge mirrors the device's light show onto the official lightstick over ESP-NOW, with a self-healing radio link.</p>
+      <ul>
+        <li>ESP-NOW colour streaming to the ARMY Bomb</li>
+        <li>Re-arms the link on channel changes and silence</li>
+        <li>Matches the on-device element colours live</li>
+      </ul>
+    </div>
+    <div class="card" style="--accent:var(--star)">
+      <span class="tag" style="background:#5be7c422;color:var(--star)">Connectivity</span>
+      <h3>Wi-Fi, MQTT &amp; web</h3>
+      <p>The S3 joins Wi-Fi and speaks MQTT, with a companion web dashboard and a filming director console for controlling elements remotely.</p>
+      <ul>
+        <li>MQTT control with a per-device topic prefix</li>
+        <li>Web dashboard served for status and control</li>
+        <li>Director console for per-element overrides on film days</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<section id="tree"><div class="wrap">
+  <div class="eyebrow">The Tree of Arcoer</div>
+  <h2>Fourteen elements, two constellations.</h2>
+  <p class="sub">Every collected member becomes a gem on the Tree — six around each central star, connected by travelling light. Placing tokens awakens the constellation the same way the device does on screen.</p>
+  <div class="treebox">
+    <iframe src="tree_of_arcoer_teaser.html" title="Tree of Arcoer" loading="lazy"></iframe>
+    <div class="fallback">Place <span class="mono" style="margin:0 5px">tree_of_arcoer_teaser.html</span> beside this page to embed the live Tree.</div>
+  </div>
+</div></section>
+
+<section id="hardware"><div class="wrap">
+  <div class="eyebrow">Hardware &amp; fabrication</div>
+  <h2>Designed, routed, and built from scratch.</h2>
+  <p class="body">The enclosure is modelled in Fusion 360 and printed on a Creality Ender 3 V3. The main board is a custom PCB designed in EasyEDA Pro and fabricated by JLCPCB, using a hand-written 16&nbsp;MB partition table that maximises application space where every stock Arduino preset falls short. All physical integration — soldering, wiring, mechanical assembly, and fault diagnosis — is done in-house.</p>
+</div></section>
+
+<section id="specs"><div class="wrap">
+  <div class="eyebrow">Specifications</div>
+  <h2>Technical summary.</h2>
+  <table>
+    <tr><th>Subsystem</th><th>Detail</th></tr>
+    <tr><td>Main processor</td><td><b>ESP32-S3</b> (N16R8) · LVGL 8.3 · Wi-Fi + MQTT</td></tr>
+    <tr><td>Audio processor</td><td><b>ESP32-WROOM</b> · Bluetooth A2DP · I²S · SD WAV</td></tr>
+    <tr><td>Token bridges</td><td><b>2× Raspberry Pi Pico W</b></td></tr>
+    <tr><td>Member tokens</td><td><b>14× ATtiny85</b>, one per element</td></tr>
+    <tr><td>Display</td><td><b>ST7796</b> 3.5″ 480×320 TFT</td></tr>
+    <tr><td>Lighting</td><td><b>66× SK9822</b> addressable LEDs · FastLED</td></tr>
+    <tr><td>NFC</td><td><b>PN532</b> reader</td></tr>
+    <tr><td>Audio out</td><td><b>MAX98357A</b> I²S amplifier</td></tr>
+    <tr><td>Lightstick sync</td><td><b>ARMY Bomb Ver. 4</b> over ESP-NOW</td></tr>
+    <tr><td>Flash</td><td>Custom 16&nbsp;MB partition, no OTA / filesystem</td></tr>
+    <tr><td>Enclosure</td><td>Fusion 360 · Ender 3 V3 print</td></tr>
+    <tr><td>PCB</td><td>EasyEDA Pro · fabricated by JLCPCB</td></tr>
+  </table>
+</div></section>
+
+<footer><div class="wrap">
+  <div>Arcoer Nexus — a custom K-pop hardware companion. Built and engineered by Vincent.</div>
+  <div class="sponsor">PCB fabrication sponsored by <b>JLCPCB</b> · OSHWLab Stars Program</div>
+</div></footer>
+
+<script>
+const el=id=>document.getElementById(id);
+// starfield
+(()=>{const sky=el("sky");let s="";for(let i=0;i<260;i++){
+  const x=(Math.random()*100).toFixed(2),y=(Math.random()*100).toFixed(2);
+  const r=Math.random();const c=r>.9?"#5BE7C4":r>.82?"#FFD678":"#ffffff";
+  s+=`<b style="left:${x}%;top:${y}%;background:${c};opacity:${(.2+Math.random()*.7).toFixed(2)}"></b>`;}
+  sky.innerHTML=s;})();
+
+const mv=el("mv"), empty=el("viewerEmpty"), tools=el("viewerTools"), hint=el("viewerHint");
+let assembledSrc=null, explodedSrc=null, exploded=false, revealed=false;
+
+function reveal(){ if(revealed)return; revealed=true;
+  mv.style.display="block"; empty.style.display="none";
+  tools.style.display="flex"; hint.style.display="block"; }
+
+// try to auto-load arcoer.glb sitting next to the page (works when hosted or local)
+mv.addEventListener("load",()=>{ assembledSrc=assembledSrc||mv.src; reveal(); });
+mv.addEventListener("error",()=>{ if(!revealed){ mv.removeAttribute("src"); mv.style.display="none"; empty.style.display="flex"; } });
+mv.src="arcoer.glb"; assembledSrc="arcoer.glb";
+// probe for an exploded variant
+const probe=document.createElement("model-viewer");probe.style.display="none";
+probe.addEventListener("load",()=>{explodedSrc="arcoer_exploded.glb";probe.remove();});
+probe.addEventListener("error",()=>probe.remove());
+probe.src="arcoer_exploded.glb";document.body.appendChild(probe);
+
+el("glbFile").onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const url=URL.createObjectURL(f); assembledSrc=url; mv.src=url; reveal();
+};
+
+el("explodeBtn").onclick=()=>{
+  if(!explodedSrc){
+    el("explodeBtn").textContent="No exploded .glb";
+    setTimeout(()=>el("explodeBtn").textContent="Exploded view",1600);
+    return;
+  }
+  exploded=!exploded;
+  mv.src = exploded ? explodedSrc : assembledSrc;
+  el("explodeBtn").classList.toggle("on",exploded);
+  el("explodeBtn").textContent = exploded ? "Assembled view" : "Exploded view";
+};
+el("spinBtn").onclick=()=>{
+  const on=mv.hasAttribute("auto-rotate");
+  if(on)mv.removeAttribute("auto-rotate");else mv.setAttribute("auto-rotate","");
+  el("spinBtn").classList.toggle("on",!on);
+};
+
+function pickHS(btn,text){
+  document.querySelectorAll(".hs").forEach(h=>h.removeAttribute("data-active"));
+  btn.setAttribute("data-active","");
+  let box=el("hsInfo");
+  if(!box){box=document.createElement("div");box.id="hsInfo";
+    box.style.cssText="position:absolute;left:12px;right:12px;bottom:54px;background:#0b0918ee;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13.5px;color:var(--ink);z-index:6";
+    el("viewerBox").appendChild(box);}
+  box.textContent=text;
+}
+</script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const $=id=>document.getElementById(id);
+
+// ── members ──
+const MEMBERS=[
+  {n:"Jungkook",c:0xFF0000,side:0},{n:"V",c:0x00FF00,side:0},{n:"Jin",c:0x0000FF,side:0},
+  {n:"Jimin",c:0x87CEFA,side:0},{n:"J-Hope",c:0x00FF50,side:0},{n:"RM",c:0xFF69B4,side:0},
+  {n:"Army",c:0xA020F0,side:0},
+  {n:"Keonho",c:0xFF9329,side:1},{n:"Juhoon",c:0xDCDCEB,side:1},{n:"Seonghyeon",c:0x9600FF,side:1},
+  {n:"James",c:0xFF69B4,side:1},{n:"Martin",c:0xFF8000,side:1},{n:"Suga",c:0xDCDCEB,side:1},
+  {n:"Coer",c:0x39FF14,side:1},
+];
+const hex=c=>'#'+c.toString(16).padStart(6,'0');
+
+// ── scene ──
+const app=document.getElementById('room3d');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x05040c);
+scene.fog=new THREE.FogExp2(0x05040c,0.03);
+
+const camera=new THREE.PerspectiveCamera(50, app.clientWidth/app.clientHeight, 0.1, 200);
+const HOME=new THREE.Vector3(0,3.2,7.5);
+camera.position.copy(HOME);
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(app.clientWidth,app.clientHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+app.appendChild(renderer.domElement);
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.dampingFactor=.08;
+controls.target.set(0,1.1,0);
+controls.minDistance=3;controls.maxDistance=14;
+controls.maxPolarAngle=Math.PI*0.52;
+
+// ── lights ──
+scene.add(new THREE.AmbientLight(0x4a4470,0.7));
+const key=new THREE.DirectionalLight(0xffffff,1.1);key.position.set(4,8,5);key.castShadow=true;
+key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=30;
+key.shadow.camera.left=-8;key.shadow.camera.right=8;key.shadow.camera.top=8;key.shadow.camera.bottom=-8;
+scene.add(key);
+const rimC=new THREE.PointLight(0x5BE7C4,0.7,20);rimC.position.set(-4,3,-3);scene.add(rimC);
+const rimP=new THREE.PointLight(0xA855F7,0.6,20);rimP.position.set(5,2,-4);scene.add(rimP);
+
+// ── room ──
+const floorMat=new THREE.MeshStandardMaterial({color:0x0c0a1c,roughness:.85,metalness:.1});
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(40,40),floorMat);
+floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+// back wall
+const wallMat=new THREE.MeshStandardMaterial({color:0x0a0818,roughness:1});
+const wall=new THREE.Mesh(new THREE.PlaneGeometry(40,20),wallMat);
+wall.position.set(0,10,-12);scene.add(wall);
+// starfield dome (points)
+(()=>{const g=new THREE.BufferGeometry();const N=600;const pos=new Float32Array(N*3);
+  for(let i=0;i<N;i++){const r=40+Math.random()*30;const th=Math.random()*Math.PI*2;const ph=Math.random()*Math.PI*0.5;
+    pos[i*3]=Math.cos(th)*Math.sin(ph)*r;pos[i*3+1]=Math.abs(Math.cos(ph))*r+2;pos[i*3+2]=Math.sin(th)*Math.sin(ph)*r;}
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const m=new THREE.PointsMaterial({color:0xffffff,size:0.14,sizeAttenuation:true,transparent:true,opacity:.7});
+  scene.add(new THREE.Points(g,m));})();
+
+// ── table ──
+const table=new THREE.Group();
+const topMat=new THREE.MeshStandardMaterial({color:0x1b1638,roughness:.5,metalness:.3});
+const tableTop=new THREE.Mesh(new THREE.BoxGeometry(6,0.28,4),topMat);
+tableTop.position.y=1;tableTop.castShadow=true;tableTop.receiveShadow=true;table.add(tableTop);
+const legMat=new THREE.MeshStandardMaterial({color:0x120f26,roughness:.7});
+[[-2.7,-1.7],[2.7,-1.7],[-2.7,1.7],[2.7,1.7]].forEach(([x,z])=>{
+  const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,1,10),legMat);
+  leg.position.set(x,0.5,z);leg.castShadow=true;table.add(leg);});
+scene.add(table);
+
+// ── gem geometry (extruded diamond) ──
+function makeGemGeo(scale=1){
+  const s=new THREE.Shape();
+  const W=0.13,H=0.24,S=0.08;
+  s.moveTo(0,-H);s.lineTo(W,-S);s.lineTo(W,S);s.lineTo(0,H);s.lineTo(-W,S);s.lineTo(-W,-S);s.closePath();
+  const geo=new THREE.ExtrudeGeometry(s,{depth:0.06,bevelEnabled:true,bevelThickness:0.02,bevelSize:0.02,bevelSegments:2});
+  geo.scale(scale,scale,scale);geo.center();return geo;
+}
+const GEM=makeGemGeo(4);
+
+// diamond-shaped slot frame (element outline) — outer gem shape minus inner hole
+function makeDiamondFrame(){
+  const outer=new THREE.Shape();
+  const W=0.13,H=0.23,S=0.085;
+  outer.moveTo(0,-H);outer.lineTo(W,-S);outer.lineTo(W,S);outer.lineTo(0,H);outer.lineTo(-W,S);outer.lineTo(-W,-S);outer.closePath();
+  const iW=0.09,iH=0.16,iS=0.058;
+  const hole=new THREE.Path();
+  hole.moveTo(0,-iH);hole.lineTo(iW,-iS);hole.lineTo(iW,iS);hole.lineTo(0,iH);hole.lineTo(-iW,iS);hole.lineTo(-iW,-iS);hole.closePath();
+  outer.holes.push(hole);
+  const geo=new THREE.ExtrudeGeometry(outer,{depth:0.03,bevelEnabled:true,bevelThickness:.008,bevelSize:.008,bevelSegments:1});
+  geo.center();return geo;
+}
+const DFRAME=makeDiamondFrame();
+
+function gemMesh(color){
+  const m=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.5,
+    roughness:.25,metalness:.4,transparent:true,opacity:.92});
+  const mesh=new THREE.Mesh(GEM,m);mesh.castShadow=true;return mesh;
+}
+
+// ── the Arcoer Nexus device ──
+const device=new THREE.Group();device.position.set(0,1.14,0);
+const bodyMat=new THREE.MeshStandardMaterial({color:0x1a1636,roughness:.45,metalness:.35});
+const body=new THREE.Mesh(new THREE.BoxGeometry(2.2,1.4,1.6),bodyMat);
+body.position.y=0.7;body.castShadow=true;body.receiveShadow=true;device.add(body);
+// bevel top
+const topPlate=new THREE.Mesh(new THREE.BoxGeometry(2.24,0.12,1.64),
+  new THREE.MeshStandardMaterial({color:0x241d48,roughness:.4,metalness:.4}));
+topPlate.position.y=1.4;device.add(topPlate);
+
+// front screen
+const screenMat=new THREE.MeshStandardMaterial({color:0x0a0f24,emissive:0x0a1330,emissiveIntensity:.6,roughness:.2});
+const screen=new THREE.Mesh(new THREE.PlaneGeometry(1.5,0.95),screenMat);
+screen.position.set(0,0.78,0.801);device.add(screen);
+// screen canvas texture
+const scr=document.createElement('canvas');scr.width=512;scr.height=320;const sx=scr.getContext('2d');
+const screenTex=new THREE.CanvasTexture(scr);
+const screenGlow=new THREE.MeshBasicMaterial({map:screenTex,transparent:true});
+const screenImg=new THREE.Mesh(new THREE.PlaneGeometry(1.5,0.95),screenGlow);
+screenImg.position.set(0,0.78,0.802);device.add(screenImg);
+function drawScreen(title,sub,color){
+  sx.clearRect(0,0,512,320);sx.fillStyle='#070a18';sx.fillRect(0,0,512,320);
+  sx.strokeStyle='#5BE7C4';sx.lineWidth=4;sx.save();sx.translate(256,120);
+  sx.beginPath();const pts=[];for(let k=0;k<8;k++){const a=k*Math.PI/4-Math.PI/2;const r=(k%2?14:38);pts.push([Math.cos(a)*r,Math.sin(a)*r]);}
+  pts.forEach((p,i)=>i?sx.lineTo(p[0],p[1]):sx.moveTo(p[0],p[1]));sx.closePath();sx.stroke();sx.restore();
+  sx.textAlign='center';
+  if(title){sx.fillStyle='#a9a3c4';sx.font='600 20px Outfit,sans-serif';sx.fillText(sub||'',256,210);
+    sx.fillStyle=color||'#FFD678';sx.font='800 54px Outfit,sans-serif';sx.fillText(title,256,262);}
+  else{sx.fillStyle='#6f6a8c';sx.font='400 22px Outfit,sans-serif';sx.fillText('Arcoer Nexus — ready',256,250);}
+  screenTex.needsUpdate=true;
+}
+// ── LIVE Tree of Arcoer on the screen: mirrors placements exactly like the device.
+// Each placed member blinks in its colour, settles to purple; links travel as
+// neighbours connect; celebration when a whole side is complete.
+let screenSide=0;
+const treeState={};          // memberName -> placedAt (ms)
+let lastPlaced=null, lastPlacedAt=-1e9;
+const REST_INT=0x9B3DF0;
+function lerpHex(a,b,t){const ar=(a>>16)&255,ag=(a>>8)&255,ab=a&255,br=(b>>16)&255,bg=(b>>8)&255,bb=b&255;
+  return `rgb(${Math.round(ar+(br-ar)*t)},${Math.round(ag+(bg-ag)*t)},${Math.round(ab+(bb-ab)*t)})`;}
+function cgemAt(x,y,fill,stroke,alpha){sx.save();sx.globalAlpha=alpha;sx.translate(x,y);
+  sx.strokeStyle=stroke;sx.lineWidth=3;sx.fillStyle=fill;sx.beginPath();
+  sx.moveTo(0,-15);sx.lineTo(9,-5);sx.lineTo(9,5);sx.lineTo(0,15);sx.lineTo(-9,5);sx.lineTo(-9,-5);sx.closePath();
+  sx.fill();sx.stroke();sx.restore();}
+function cstarAt(x,y,stroke,alpha){sx.save();sx.globalAlpha=alpha;sx.translate(x,y);
+  sx.strokeStyle=stroke;sx.lineWidth=3.5;sx.fillStyle=stroke;sx.globalAlpha=alpha*0.25;
+  sx.beginPath();for(let k=0;k<8;k++){const a=k*Math.PI/4-Math.PI/2;const r=(k%2?9:24);
+    const px=Math.cos(a)*r,py=Math.sin(a)*r;k?sx.lineTo(px,py):sx.moveTo(px,py);}sx.closePath();sx.fill();
+  sx.globalAlpha=alpha;sx.stroke();sx.restore();}
+// state of one placed member: colour + alpha at time `now`
+function memState(m,now){
+  const at=treeState[m.n];if(at==null)return null;
+  const e=now-at;
+  if(e<1100){const bl=0.35+0.65*Math.abs(Math.sin(e/95));return{fill:hex(m.c),stroke:hex(m.c),alpha:bl,settled:false};}
+  if(e<1900){const t=(e-1100)/800;const c=lerpHex(m.c,REST_INT,t);return{fill:c,stroke:c,alpha:1,settled:t>0.5};}
+  return{fill:hex(REST_INT),stroke:hex(REST_INT),alpha:1,settled:true};
+}
+function drawTree(side){ drawTreeLive(side, performance.now()); } // used by toggle
+function drawTreeLive(side, now){
+  sx.clearRect(0,0,512,320);sx.fillStyle='#070a18';sx.fillRect(0,0,512,320);
+  const ring=MEMBERS.filter(m=>m.side===side && m.n!=='Army' && m.n!=='Coer');
+  const centre=MEMBERS.find(m=> side===0 ? m.n==='Army' : m.n==='Coer');
+  const cx=256,cy=140,R=86;
+  const pos=[];for(let i=0;i<6;i++){const a=i*Math.PI/3-Math.PI/2;pos.push([cx+Math.cos(a)*R,cy+Math.sin(a)*R]);}
+  const centrePlaced = treeState[centre.n]!=null;
+  const allPlaced = ring.every(m=>treeState[m.n]!=null) && centrePlaced;
+  // edges between adjacent ring gems (only when both settled) — travel-in
+  sx.lineWidth=2.5;
+  for(let i=0;i<6;i++){const n=(i+1)%6;const a=ring[i],b=ring[n];
+    const sa=memState(a,now),sb=memState(b,now);
+    if(sa&&sb&&sa.settled&&sb.settled){
+      const col=allPlaced?hex(a.c):hex(REST_INT);
+      const later=Math.max(treeState[a.n],treeState[b.n]);const prog=Math.min(1,(now-later-800)/500);
+      if(prog>0){sx.strokeStyle=col;sx.globalAlpha=0.8;
+        sx.beginPath();sx.moveTo(pos[i][0],pos[i][1]);
+        sx.lineTo(pos[i][0]+(pos[n][0]-pos[i][0])*prog,pos[i][1]+(pos[n][1]-pos[i][1])*prog);sx.stroke();sx.globalAlpha=1;}
+    }
+  }
+  // spokes centre->gem when both settled
+  for(let i=0;i<6;i++){const s=memState(ring[i],now);const sc=memState(centre,now);
+    if(s&&sc&&s.settled&&sc.settled){const later=Math.max(treeState[ring[i].n],treeState[centre.n]);
+      const prog=Math.min(1,(now-later-800)/500);if(prog>0){
+      sx.strokeStyle=allPlaced?hex(ring[i].c):hex(REST_INT);sx.globalAlpha=0.6;
+      sx.beginPath();sx.moveTo(cx,cy);sx.lineTo(cx+(pos[i][0]-cx)*prog,cy+(pos[i][1]-cy)*prog);sx.stroke();sx.globalAlpha=1;}}
+  }
+  // ring gems
+  ring.forEach((m,i)=>{const st=memState(m,now);
+    if(st){let fill=st.fill,stroke=st.stroke;
+      if(allPlaced){const cel=0.7+0.3*Math.sin(now/300+i);fill=hex(m.c);stroke=hex(m.c);cgemAt(pos[i][0],pos[i][1],fill,stroke,cel);}
+      else cgemAt(pos[i][0],pos[i][1],fill,stroke,st.alpha);}
+    else cgemAt(pos[i][0],pos[i][1],'#141024','#3a3160',1);});
+  // centre star
+  const cs=memState(centre,now);
+  if(cs){const stroke=allPlaced?hex(centre.c):cs.stroke;cstarAt(cx,cy,stroke,allPlaced?(0.75+0.25*Math.sin(now/280)):cs.alpha);}
+  else cstarAt(cx,cy,'#3a3160',1);
+  // connected banner
+  if(lastPlaced && lastPlaced.side===side && now-lastPlacedAt<1900){
+    const a=Math.min(1,(now-lastPlacedAt)/150) * (now-lastPlacedAt>1500?Math.max(0,(1900-(now-lastPlacedAt))/400):1);
+    sx.globalAlpha=a;sx.textAlign='center';
+    sx.fillStyle=hex(lastPlaced.c);sx.font='800 34px Outfit,sans-serif';sx.fillText(lastPlaced.n,256,258);
+    sx.fillStyle='#c9c4e0';sx.font='600 13px Outfit,sans-serif';sx.fillText('C O N N E C T E D',256,282);
+    sx.globalAlpha=1;
+  } else {
+    sx.fillStyle='#7a7498';sx.font='700 18px Outfit,sans-serif';sx.textAlign='center';
+    sx.fillText(side===0?'TREE OF ARCOER · BTS':'TREE OF ARCOER · CORTIS',256,300);
+  }
+  screenTex.needsUpdate=true;
+}
+drawTree(0);
+
+// front: vinyl disk placement (recessed ring)
+const vinylPad=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.04,40),
+  new THREE.MeshStandardMaterial({color:0x0d0a1e,roughness:.6,metalness:.3}));
+vinylPad.position.set(0,0.06,0.55);vinylPad.rotation.x=0;device.add(vinylPad);
+// mark vinyl area on top-front lip
+const vinylRing=new THREE.Mesh(new THREE.TorusGeometry(0.4,0.02,8,40),
+  new THREE.MeshStandardMaterial({color:0x5BE7C4,emissive:0x2a6b5c,emissiveIntensity:.5,roughness:.4}));
+vinylRing.position.set(0,0.08,0.55);vinylRing.rotation.x=Math.PI/2;device.add(vinylRing);
+
+// ── slots on left and right faces ──
+// layout: LEFT face = 3 BTS + 3 CORTIS ; RIGHT face = 4 BTS + 2 CORTIS (12 side slots)
+// Army & Coer -> the two "anchor" slots on top (centre elements)
+const slots=[];
+function addSlot(x,y,z,ry,accept){ // accept: 0=BTS,1=CORTIS,-1=center-any
+  const g=new THREE.Group();g.position.set(x,y,z);g.rotation.y=ry;
+  const ring=new THREE.Mesh(DFRAME,
+    new THREE.MeshStandardMaterial({color:0x4a4170,emissive:0x1a1630,emissiveIntensity:.4,roughness:.5,metalness:.3}));
+  g.add(ring);
+  device.add(g);
+  const slot={grp:g,ring,accept,filled:false,x,y,z};slots.push(slot);return slot;
+}
+const LX=-1.11, RX=1.11;
+// LEFT face (faces -X): 3 BTS on top row, 3 CORTIS on bottom row
+[-0.5,0,0.5].forEach(z=>addSlot(LX,1.0,z,-Math.PI/2,0));   // 3 BTS
+[-0.5,0,0.5].forEach(z=>addSlot(LX,0.42,z,-Math.PI/2,1));  // 3 CORTIS
+// RIGHT face (faces +X): 4 BTS on top row, 2 CORTIS on bottom row
+[-0.6,-0.2,0.2,0.6].forEach(z=>addSlot(RX,1.0,z,Math.PI/2,0)); // 4 BTS
+[-0.3,0.3].forEach(z=>addSlot(RX,0.42,z,Math.PI/2,1));          // 2 CORTIS
+// TOP plate anchors for the two centre elements: Army & Coer (lie flat)
+addSlot(-0.45,1.47,0,0,-1); slots[slots.length-1].grp.rotation.x=-Math.PI/2;
+addSlot(0.45,1.47,0,0,-1);  slots[slots.length-1].grp.rotation.x=-Math.PI/2;
+
+scene.add(device);
+
+// glow disc under device
+const disc=new THREE.Mesh(new THREE.CircleGeometry(1.8,40),
+  new THREE.MeshBasicMaterial({color:0x5BE7C4,transparent:true,opacity:.06}));
+disc.rotation.x=-Math.PI/2;disc.position.set(0,1.15,0);scene.add(disc);
+
+// ── two element boxes on the table: BTS and CORTIS ──
+const boxes=[];
+function makeBox(px,pz,side,labelText,labelColor){
+  const grp=new THREE.Group();grp.position.set(px,1.16,pz);
+  const mat=new THREE.MeshStandardMaterial({color:0x241d48,roughness:.5,metalness:.35});
+  const base=new THREE.Mesh(new THREE.BoxGeometry(1.25,0.34,0.9),mat);
+  base.position.y=0.17;base.castShadow=true;base.receiveShadow=true;grp.add(base);
+  // hollow interior floor (slightly inset, darker)
+  const inside=new THREE.Mesh(new THREE.BoxGeometry(1.12,0.02,0.78),
+    new THREE.MeshStandardMaterial({color:side?0x0e2410:0x140a24,roughness:.8}));
+  inside.position.y=0.31;grp.add(inside);
+  // lid on a hinge at the back
+  const lidPivot=new THREE.Group();lidPivot.position.set(0,0.34,-0.45);grp.add(lidPivot);
+  const lid=new THREE.Mesh(new THREE.BoxGeometry(1.27,0.07,0.92),
+    new THREE.MeshStandardMaterial({color:0x2e2658,roughness:.4,metalness:.4}));
+  lid.position.set(0,0.035,0.45);lidPivot.add(lid);
+  const glow=new THREE.PointLight(side?0x39FF14:0xA855F7,0,3);glow.position.set(0,0.5,0);grp.add(glow);
+  scene.add(grp);
+  // label sprite
+  const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');
+  x.fillStyle=labelColor;x.font='700 34px Outfit,sans-serif';x.textAlign='center';x.fillText(labelText,128,44);
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true}));
+  spr.scale.set(1,0.25,1);spr.position.set(px,1.06,pz+0.55);scene.add(spr);
+
+  // diamonds laid FLAT in a tidy grid on the box floor (no overlap)
+  const mem=MEMBERS.filter(m=>m.side===side);
+  const dias=[];
+  const cols=4, cw=0.28, rh=0.32;
+  mem.forEach((m,i)=>{
+    const gm=gemMesh(m.c);gm.scale.setScalar(0.2);
+    gm.rotation.x=-Math.PI/2;                 // lay flat, face up
+    const col=i%cols, row=Math.floor(i/cols);
+    const rowCount=Math.min(cols,mem.length-row*cols);
+    const x0=-((rowCount-1)*cw)/2;
+    gm.position.set(x0+col*cw, 0.33, -0.16+row*rh);
+    gm.userData.member=m;gm.userData.box=grp;
+    grp.add(gm);dias.push(gm);
+  });
+  const boxObj={grp,base,lid,lidPivot,glow,dias,side,open:false,lidTarget:0};
+  boxes.push(boxObj);return boxObj;
+}
+const btsBox=makeBox(-2.05,0.55,0,"BTS","#c9c4e0");
+const cortisBox=makeBox(2.05,0.55,1,"CORTIS","#c9c4e0");
+const allDiamonds=[...btsBox.dias,...cortisBox.dias];
+
+// ── raycasting for clicks ──
+const ray=new THREE.Raycaster();const mouse=new THREE.Vector2();
+let insideBox=null;   // which box we're looking inside
+let camAnim=null;
+
+function setCam(toPos,toTarget,dur=1.0,after){
+  const fromPos=camera.position.clone();const fromTgt=controls.target.clone();
+  camAnim={t:0,dur,fromPos,toPos:toPos.clone(),fromTgt,toTarget:toTarget.clone(),after};
+}
+
+function openBox(boxObj){
+  insideBox=boxObj;boxObj.open=true;boxObj.lidTarget=-Math.PI*0.9;boxObj.glow.intensity=1.4;
+  const p=boxObj.grp.position;
+  const look=new THREE.Vector3(p.x,p.y+0.35,p.z);
+  const eye=new THREE.Vector3(p.x,p.y+1.4,p.z+1.5);
+  controls.enabled=false;
+  setCam(eye,look,1.0,()=>{$('backBtn').style.display='block';});
+  $('hint').innerHTML='Click a <b>diamond</b> to pick it';
+}
+function closeBox(){
+  if(insideBox){insideBox.lidTarget=0;insideBox.glow.intensity=0;insideBox.open=false;}
+  insideBox=null;$('backBtn').style.display='none';
+  setCam(HOME,new THREE.Vector3(0,1.1,0),1.0,()=>{controls.enabled=true;});
+  $('hint').innerHTML='Drag to orbit · scroll to zoom · click a <b>box</b> to look inside';
+}
+
+let picked=null;
+const flying=[]; // {mesh, from, to, arc, t, dur, onDone}
+function flyTo(mesh,toVec,dur,onDone){
+  flying.push({mesh,from:mesh.position.clone(),to:toVec.clone(),
+    arc:0.6+mesh.position.distanceTo(toVec)*0.12, t:0, dur, onDone});
+}
+function nextSlot(m){
+  const isCentre=(m.n==='Army'||m.n==='Coer');
+  if(isCentre) return slots.find(s=>s.accept===-1 && !s.filled);
+  return slots.find(s=>s.accept===m.side && !s.filled);
+}
+function onClick(e){
+  const rc=renderer.domElement.getBoundingClientRect();mouse.x=((e.clientX-rc.left)/rc.width)*2-1;mouse.y=-((e.clientY-rc.top)/rc.height)*2+1;
+  ray.setFromCamera(mouse,camera);
+  if(!insideBox){
+    for(const bx of boxes){const hits=ray.intersectObjects([bx.base,bx.lid],false);
+      if(hits.length){openBox(bx);return;}}
+  }else{
+    const hits=ray.intersectObjects(insideBox.dias.filter(d=>d.visible),false);
+    if(hits.length){launchDiamond(hits[0].object);return;}
+  }
+}
+// click a diamond -> it flies out of the box, across, and lands in its slot
+function launchDiamond(mesh){
+  const m=mesh.userData.member;
+  const slot=nextSlot(m);
+  if(!slot){ // no free slot for this side
+    $('hint').innerHTML=`No free <b>${m.side?'CORTIS':'BTS'}</b> slot`;return;
+  }
+  // world position of the clicked diamond
+  const startW=new THREE.Vector3();mesh.getWorldPosition(startW);
+  mesh.visible=false; // remove from box
+  // a flying gem in world space
+  const fly=gemMesh(m.c);fly.scale.setScalar(0.34);fly.position.copy(startW);
+  scene.add(fly);
+  // close the box lid + fly camera back to the device to watch it land
+  if(insideBox){insideBox.lidTarget=0;insideBox.glow.intensity=0;insideBox.open=false;insideBox=null;}
+  $('backBtn').style.display='none';
+  setCam(HOME,new THREE.Vector3(0,1.1,0),0.9,()=>{controls.enabled=true;});
+  // target = slot world position
+  const targetW=new THREE.Vector3();slot.grp.getWorldPosition(targetW);
+  const targetQuat=new THREE.Quaternion();slot.grp.getWorldQuaternion(targetQuat);
+  $('hint').innerHTML=`<b>${m.n}</b> connecting…`;
+  flyTo(fly,targetW,1.1,()=>{
+    scene.remove(fly);
+    connectToSlot(slot,m);
+  });
+  // spin the flying gem as it travels
+  fly.userData.spin=true;
+}
+function connectToSlot(slot,m){
+  const ok = slot.accept===-1 ? true : slot.accept===m.side;
+  const gm=gemMesh(m.c);gm.scale.setScalar(0.34);
+  gm.position.copy(slot.grp.position);gm.rotation.copy(slot.grp.rotation);
+  device.add(gm);
+  slot.ring.material.color.set(m.c);slot.ring.material.emissive.set(m.c);slot.ring.material.emissiveIntensity=1.0;
+  slot.filled=true;slot.gem=gm;
+  // record on the on-screen Tree and switch the screen to this member's side
+  treeState[m.n]=performance.now();lastPlaced=m;lastPlacedAt=performance.now();
+  screenSide=m.side;$('sideBtn').textContent='Screen: '+(screenSide?'CORTIS':'BTS')+' side';
+  showFlash(m.n, ok?'Connected':'Wrong side', hex(m.c), ok);
+  $('hint').innerHTML='Click a <b>box</b> to place more';
+}
+function showFlash(nm,st,color,ok){
+  $('flashNm').textContent=nm;$('flashNm').style.color=color;$('flashNm').style.textShadow=`0 0 22px ${color}99`;
+  $('flashSt').textContent=st;$('flashSt').style.color=ok?color:'#ff6b6b';
+  $('flash').classList.add('show');clearTimeout(window._ft);
+  window._ft=setTimeout(()=>$('flash').classList.remove('show'),2400);
+}
+renderer.domElement.addEventListener('click',onClick);
+
+$('backBtn').onclick=closeBox;
+$('sideBtn').onclick=()=>{screenSide=screenSide?0:1;drawTree(screenSide);
+  $('sideBtn').textContent='Screen: '+(screenSide?'CORTIS':'BTS')+' side';};
+$('resetBtn').onclick=()=>{
+  flying.length=0;
+  for(const k in treeState)delete treeState[k];lastPlaced=null;lastPlacedAt=-1e9;
+  slots.forEach(s=>{if(s.gem){device.remove(s.gem);s.gem=null;}s.filled=false;
+    s.ring.material.color.set(0x4a4170);s.ring.material.emissive.set(0x1a1630);s.ring.material.emissiveIntensity=.4;});
+  allDiamonds.forEach(d=>{d.visible=true;d.material.emissiveIntensity=.5;});
+  boxes.forEach(bx=>{bx.open=false;bx.lidTarget=0;bx.glow.intensity=0;});
+  picked=null;insideBox=null;$('backBtn').style.display='none';
+  drawTree(screenSide);controls.enabled=true;
+  setCam(HOME,new THREE.Vector3(0,1.1,0),0.8);
+  $('hint').innerHTML='Drag to orbit · scroll to zoom · click a <b>box</b> to look inside';
+};
+
+// ── resize ──
+new ResizeObserver(()=>{camera.aspect=app.clientWidth/app.clientHeight;camera.updateProjectionMatrix();renderer.setSize(app.clientWidth,app.clientHeight);}).observe(app);
+
+// ── loop ──
+$('loading').style.display='none';
+const clock=new THREE.Clock();
+function tick(){
+  requestAnimationFrame(tick);
+  const dt=clock.getDelta();
+  // lids ease
+  boxes.forEach(bx=>{
+    bx.lidPivot.rotation.x += (bx.lidTarget-bx.lidPivot.rotation.x)*Math.min(1,dt*4);
+  });
+  // flying gems arc from box to slot
+  for(let i=flying.length-1;i>=0;i--){const f=flying[i];f.t+=dt/f.dur;const t=Math.min(1,f.t);
+    const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    f.mesh.position.lerpVectors(f.from,f.to,e);
+    f.mesh.position.y += Math.sin(e*Math.PI)*f.arc; // arc up
+    if(f.mesh.userData.spin){f.mesh.rotation.y+=dt*6;f.mesh.rotation.z+=dt*3;}
+    if(t>=1){const d=f.onDone;flying.splice(i,1);if(d)d();}
+  }
+  // camera animation
+  if(camAnim){camAnim.t+=dt/camAnim.dur;const t=Math.min(1,camAnim.t);
+    const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; // easeInOut
+    camera.position.lerpVectors(camAnim.fromPos,camAnim.toPos,e);
+    controls.target.lerpVectors(camAnim.fromTgt,camAnim.toTarget,e);
+    if(t>=1){const a=camAnim.after;camAnim=null;if(a)a();}}
+  controls.update();
+  drawTreeLive(screenSide, performance.now());
+  renderer.render(scene,camera);
+}
+tick();
+
+</script>
+</body>
+</html>

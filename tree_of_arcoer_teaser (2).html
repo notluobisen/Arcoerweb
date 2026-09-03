@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Tree of Arcoer — Teaser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#FFD678; --gold-glow:#FFD67866;
+    --star:#5BE7C4; --star-glow:#5BE7C466;
+    --line:#7c6a9c;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:#00b140;font-family:'Outfit',system-ui,sans-serif}
+  body.dark{background:#04030a}
+  body.transparent{background:transparent}
+
+  .scene{position:absolute;inset:0;opacity:0;transform-origin:center;
+    animation:sceneUp 1.4s ease .1s forwards, drift 22s ease-out .1s forwards}
+
+  /* starfield */
+  .stars{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .sl{position:absolute;top:0;left:0;width:2px;height:2px;border-radius:50%;background:transparent}
+  .sl1{animation:twk 4s ease-in-out infinite, sdrift 50s linear infinite}
+  .sl2{width:1px;height:1px;animation:twk 6s ease-in-out .8s infinite, sdrift 70s linear infinite}
+  .sl3{width:2.6px;height:2.6px;animation:twk 5s ease-in-out .4s infinite, sdrift 90s linear infinite}
+
+  .coreglow{position:absolute;left:50%;top:50%;width:70vh;height:70vh;
+    transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;opacity:0;
+    background:radial-gradient(circle, var(--star-glow) 0%, transparent 58%);
+    animation:coreGlowIn 2s ease 1.6s forwards}
+  .vignette{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(circle at 50% 50%, transparent 38%, #000c 100%)}
+
+  .const{position:absolute;inset:0;transform:scale(var(--tscale,1));transform-origin:center 42%}
+  .const svg{width:100%;height:100%;display:block;overflow:visible}
+
+  /* faint locked outlines that draw in first */
+  .outline{stroke:var(--line);stroke-opacity:.35;fill:none;stroke-width:1.5;
+    stroke-dasharray:600;stroke-dashoffset:600;
+    animation:drawOutline 1.4s ease .6s forwards}
+
+  /* spokes: energy travels star -> gem */
+  .spoke{fill:none;stroke-width:2.5;stroke-linecap:round;pathLength:100;
+    stroke-dasharray:100;stroke-dashoffset:100;opacity:0}
+  /* edges: energy travels gem -> gem */
+  .edge{fill:none;stroke-width:2;stroke-linecap:round;pathLength:100;
+    stroke-dasharray:100;stroke-dashoffset:100;opacity:0}
+
+  /* gems start as dim locked silhouettes, then ignite in their colour */
+  .gem{opacity:0}
+  .gem .glow{opacity:0}
+
+  /* central star */
+  .starwrap{opacity:0;transform-origin:640px 290px;transform-box:view-box;
+    animation:starIgnite 1s cubic-bezier(.3,1.3,.4,1) 1.5s forwards}
+  .starcore{animation:starPulse 3s ease-in-out 3s infinite}
+
+  /* ── TITLE ── */
+  .titlewrap{position:absolute;left:0;right:0;bottom:5%;text-align:center;
+    opacity:0;transform:translate(var(--tx,0),calc(14px + var(--ty,0px)));
+    animation:titleIn 1.3s cubic-bezier(.2,.7,.2,1) 7.0s forwards}
+  /* callout-style label above the name */
+  .cardlabel{font-size:1.5vh;font-weight:600;letter-spacing:.42em;text-transform:uppercase;
+    color:#ffffff88;margin-bottom:1vh}
+  .cardlabel::after{content:":";margin-left:.1em;opacity:.8}
+  .title{position:relative;display:inline-block;
+    font-size:5.6vh;font-weight:700;letter-spacing:.02em;
+    line-height:1.0;white-space:nowrap}
+  .t-base{color:var(--gold);text-shadow:0 0 10px var(--gold-glow),0 0 22px var(--gold-glow)}
+  .t-shine{position:absolute;inset:0;color:#fff;
+    text-shadow:0 0 6px #fff,0 0 16px #fff,0 0 34px var(--gold-glow),0 0 60px var(--gold-glow);
+    -webkit-mask-image:linear-gradient(100deg,transparent 34%,#000 46%,#000 54%,transparent 66%);
+    mask-image:linear-gradient(100deg,transparent 34%,#000 46%,#000 54%,transparent 66%);
+    -webkit-mask-size:320% 100%;mask-size:320% 100%;
+    -webkit-mask-position:120% 0;mask-position:120% 0;
+    animation:titleShine 1.7s cubic-bezier(.5,0,.25,1) 7.6s 1 forwards}
+  .carddesc{font-size:1.7vh;font-weight:300;letter-spacing:.12em;font-style:italic;
+    color:#e9dcae;margin-top:1.6vh;opacity:.85;text-shadow:0 0 12px var(--gold-glow)}
+  .hook{display:none}
+
+  @keyframes sceneUp{to{opacity:1}}
+  @keyframes drift{0%{transform:scale(1.08)}100%{transform:scale(1)}}
+  @keyframes coreGlowIn{to{opacity:.5}}
+  @keyframes twk{0%,100%{opacity:.3}50%{opacity:1}}
+  @keyframes sdrift{from{transform:translateY(0)}to{transform:translateY(-700px)}}
+  @keyframes drawOutline{to{stroke-dashoffset:0}}
+  @keyframes starIgnite{0%{opacity:0;transform:scale(0) rotate(-90deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+  @keyframes starPulse{0%,100%{filter:brightness(1) drop-shadow(0 0 6px currentColor)}
+    50%{filter:brightness(1.4) drop-shadow(0 0 16px currentColor)}}
+  @keyframes settleToPurple{to{color:#9B3DF0}}
+  @keyframes travel{to{stroke-dashoffset:0;opacity:1}}
+  @keyframes gemIgnite{
+    0%{opacity:0;transform:scale(.5)}
+    8%{opacity:1;transform:scale(1)}
+    16%{opacity:.12}
+    26%{opacity:1}
+    36%{opacity:.12}
+    46%{opacity:1}
+    56%{opacity:.08;transform:scale(.94)}
+    78%{opacity:1;transform:scale(1.14)}
+    100%{opacity:1;transform:scale(1)}
+  }
+  /* fade through toward the resting purple */
+  @keyframes gemToPurple{0%{color:var(--own)}100%{color:var(--rest)}}
+  /* all-connected celebration: burst back to own colour */
+  @keyframes gemCelebrate{0%{color:var(--rest)}100%{color:var(--own)}}
+  /* brighten pulse during the celebration */
+  @keyframes gemPulse{0%,100%{filter:drop-shadow(0 0 14px currentColor) brightness(1)}
+    50%{filter:drop-shadow(0 0 26px currentColor) brightness(1.6)}}
+  /* settle back to the resting purple for the final held frame */
+  @keyframes gemRestPurple{0%{color:var(--own)}100%{color:var(--rest)}}
+  @keyframes glowIn{to{opacity:1}}
+  @keyframes titleIn{to{opacity:1;transform:translate(var(--tx,0),var(--ty,0px))}}
+  @keyframes titleShine{0%{-webkit-mask-position:120% 0;mask-position:120% 0}
+    100%{-webkit-mask-position:-20% 0;mask-position:-20% 0}}
+  @keyframes hookIn{to{opacity:.92}}
+  @media(prefers-reduced-motion:reduce){*{animation-duration:.001s!important}}
+
+  .controls{position:fixed;left:12px;bottom:12px;z-index:50;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    background:#000000cc;border:1px solid #ffffff22;border-radius:10px;padding:10px 12px;font-size:13px;color:#fff;backdrop-filter:blur(6px)}
+  .controls.hidden{display:none}
+  .controls button{font-family:inherit;font-size:13px;background:#1a1824;color:#fff;border:1px solid #ffffff33;border-radius:6px;padding:5px 8px;cursor:pointer}
+  #showAgain{position:fixed;left:12px;bottom:12px;z-index:50;display:none}
+</style>
+</head>
+<body class="dark">
+
+<div class="scene" id="scene">
+  <div class="stars">
+    <div class="sl sl1" id="sl1"></div>
+    <div class="sl sl2" id="sl2"></div>
+    <div class="sl sl3" id="sl3"></div>
+  </div>
+  <div class="coreglow"></div>
+
+  <div class="const">
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" id="csvg">
+      <defs>
+        <radialGradient id="starG" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stop-color="#fff"/>
+          <stop offset="55%" stop-color="var(--star)" stop-opacity="0.85"/>
+          <stop offset="100%" stop-color="var(--star)" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <!-- JS fills: outlines, spokes, edges, gems, star -->
+    </svg>
+  </div>
+
+  <div class="titlewrap" id="titlewrap">
+    <div class="title">
+      <span class="t-base">Tree of Arcoer</span>
+      <span class="t-shine">Tree of Arcoer</span>
+    </div>
+  </div>
+
+  <div class="vignette"></div>
+</div>
+
+<div class="controls" id="controls">
+  <button id="bgBtn">BG: dark</button>
+  <label style="color:#fff;font-size:13px">Tree size <input type="range" id="treeSize" min="50" max="130" value="100" style="width:90px"></label>
+  <input type="number" id="treeSizeNum" value="100" step="1" style="width:56px;font-family:inherit;font-size:13px;background:#1a1824;color:#fff;border:1px solid #ffffff33;border-radius:6px;padding:5px 6px" title="Tree size %">
+  <label style="color:#fff;font-size:13px">Text X <input type="range" id="txtX" min="-40" max="40" value="0" style="width:90px"></label>
+  <input type="number" id="txtXNum" value="0" step="0.5" style="width:56px;font-family:inherit;font-size:13px;background:#1a1824;color:#fff;border:1px solid #ffffff33;border-radius:6px;padding:5px 6px" title="Text X (vw)">
+  <label style="color:#fff;font-size:13px">Text Y <input type="range" id="txtY" min="-50" max="20" value="0" style="width:90px"></label>
+  <input type="number" id="txtYNum" value="0" step="0.5" style="width:56px;font-family:inherit;font-size:13px;background:#1a1824;color:#fff;border:1px solid #ffffff33;border-radius:6px;padding:5px 6px" title="Text Y (vh)">
+  <button id="replayBtn">Replay ▶</button>
+  <button id="hideBtn">Hide bar (record)</button>
+</div>
+<button id="showAgain">Show controls</button>
+
+<script>
+const el=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+const REST="#9B3DF0";  // firmware TOKEN_REST_COLOR
+
+// two sides of the Tree — top (CORTIS) and bottom (BTS). No green (green screen).
+// Real firmware member colours. Top = BTS side, bottom = CORTIS side.
+// Centre stars are the two centre elements: Army (purple) and Coer (green).
+const TOP={cx:640, cy:150, R:104, star:"#A020F0", starName:"Army", gems:[
+  {c:"#FF0000", n:"Jungkook"},
+  {c:"#00FF00", n:"V"},
+  {c:"#0000FF", n:"Jin"},
+  {c:"#87CEFA", n:"Jimin"},
+  {c:"#00FF50", n:"J-Hope"},
+  {c:"#FF69B4", n:"RM"},
+]};
+const BOT={cx:640, cy:445, R:104, star:"#39FF14", starName:"Coer", gems:[
+  {c:"#FF9329", n:"Keonho"},
+  {c:"#DCDCEB", n:"Juhoon"},
+  {c:"#9600FF", n:"Seonghyeon"},
+  {c:"#FF69B4", n:"James"},
+  {c:"#FF8000", n:"Martin"},
+  {c:"#DCDCEB", n:"Suga"},
+]};
+
+// firmware gem shape (13/24/8 diamond)
+function gemPath(s){const W=13*s,H=24*s,S=8*s;
+  return `0,${-H} ${W},${-S} ${W},${S} 0,${H} ${-W},${S} ${-W},${-S}`;}
+// firmware 4-point star (8 pts, r 11/5)
+function starPts(cx,cy,scale){const p=[];
+  for(let k=0;k<8;k++){const a=k*(Math.PI/4)-Math.PI/2;const r=(k%2?5:11)*scale;
+    p.push(`${(cx+Math.cos(a)*r).toFixed(1)},${(cy+Math.sin(a)*r).toFixed(1)}`);}
+  return p.join(" ");}
+
+const mk=(tag,attrs,cls)=>{const e=document.createElementNS(NS,tag);
+  for(const k in attrs)e.setAttribute(k,attrs[k]); if(cls)e.setAttribute("class",cls); return e;};
+
+// Draw one constellation. tShift delays the whole ignition (for staggering the two).
+function drawTree(svg, T, tShift){
+  const {cx,cy,R,gems,star:starCol}=T;
+  const gscale=R/175*1.5;   // gem size scales with ring radius
+  const pos=gems.map((_,i)=>{const a=i*(2*Math.PI/6)-Math.PI/2;
+    return {x:cx+Math.cos(a)*R, y:cy+Math.sin(a)*R};});
+
+  // faint locked outlines
+  const outlineG=mk("g",{});
+  for(let i=0;i<6;i++){const n=(i+1)%6;
+    outlineG.appendChild(mk("line",{x1:pos[i].x,y1:pos[i].y,x2:pos[n].x,y2:pos[n].y},"outline"));}
+  for(let i=0;i<6;i++)
+    outlineG.appendChild(mk("line",{x1:cx,y1:cy,x2:pos[i].x,y2:pos[i].y},"outline"));
+  for(let i=0;i<6;i++){
+    const g=mk("g",{transform:`translate(${pos[i].x},${pos[i].y})`});
+    g.appendChild(mk("polygon",{points:gemPath(gscale*0.73)},"outline"));
+    outlineG.appendChild(g);
+  }
+  svg.appendChild(outlineG);
+
+  // spokes
+  for(let i=0;i<6;i++){
+    const sp=mk("line",{x1:cx,y1:cy,x2:pos[i].x,y2:pos[i].y,stroke:"currentColor","pathLength":100},"spoke");
+    sp.style.color=gems[i].c;sp.style.filter="drop-shadow(0 0 4px currentColor)";
+    sp.style.animation=`travel .55s ease ${(4.4+tShift+i*0.13).toFixed(2)}s forwards, settleToPurple 1.4s ease ${(8.0+tShift).toFixed(2)}s forwards`;
+    svg.appendChild(sp);
+  }
+  // edges
+  for(let i=0;i<6;i++){const n=(i+1)%6;
+    const ed=mk("line",{x1:pos[i].x,y1:pos[i].y,x2:pos[n].x,y2:pos[n].y,stroke:"currentColor","pathLength":100},"edge");
+    ed.style.color=gems[i].c;ed.style.filter="drop-shadow(0 0 3px currentColor)";
+    ed.style.animation=`travel .55s ease ${(5.3+tShift+i*0.13).toFixed(2)}s forwards, settleToPurple 1.4s ease ${(8.0+tShift).toFixed(2)}s forwards`;
+    svg.appendChild(ed);
+  }
+
+  // gems
+  for(let i=0;i<6;i++){
+    const outer=mk("g",{transform:`translate(${pos[i].x},${pos[i].y})`});
+    const g=mk("g",{},"gem");
+    g.style.transformBox="fill-box";g.style.transformOrigin="center";
+    g.style.setProperty("--own",gems[i].c);g.style.setProperty("--rest",REST);
+    g.style.color=gems[i].c;g.style.filter="drop-shadow(0 0 12px currentColor)";
+    const bt=(2.0+tShift+i*0.18).toFixed(2), pt=(3.5+tShift+i*0.16).toFixed(2);
+    g.style.animation=
+      `gemIgnite 1.3s cubic-bezier(.3,1.3,.4,1) ${bt}s forwards,`+
+      `gemToPurple .8s ease ${pt}s forwards,`+
+      `gemCelebrate .7s ease ${(6.2+tShift).toFixed(2)}s forwards,`+
+      `gemPulse .9s ease ${(6.2+tShift).toFixed(2)}s,`+
+      `gemRestPurple 1.4s ease ${(8.0+tShift).toFixed(2)}s forwards`;
+    const halo=mk("circle",{r:36,fill:"currentColor","fill-opacity":"0.7"},"glow");
+    halo.style.filter="blur(11px)";halo.style.opacity=0;
+    halo.style.animation=`glowIn .6s ease ${(+bt+0.8).toFixed(2)}s forwards`;
+    g.appendChild(halo);
+    g.appendChild(mk("polygon",{points:gemPath(gscale),fill:"currentColor","fill-opacity":.4,
+      stroke:"currentColor","stroke-width":3,"stroke-linejoin":"round"}));
+    g.appendChild(mk("polygon",{points:gemPath(gscale*0.55),fill:"currentColor","fill-opacity":.35,
+      stroke:"#fff","stroke-width":1.2,"stroke-linejoin":"round","stroke-opacity":.9}));
+    g.appendChild(mk("polygon",{points:gemPath(gscale*0.27),fill:"#fff","fill-opacity":.92}));
+    g.appendChild(mk("line",{x1:0,y1:-24*gscale,x2:0,y2:24*gscale,stroke:"#fff","stroke-width":1,"stroke-opacity":.5}));
+    outer.appendChild(g);svg.appendChild(outer);
+  }
+
+  // central star
+  const starG=mk("g",{},"starwrap");
+  starG.style.color=starCol;starG.style.transformBox="view-box";
+  starG.style.transformOrigin=cx+"px "+cy+"px";
+  starG.style.animation=`starIgnite 1s cubic-bezier(.3,1.3,.4,1) ${(1.5+tShift).toFixed(2)}s forwards, settleToPurple 1.4s ease ${(8.0+tShift).toFixed(2)}s forwards`;
+  const glow=mk("circle",{cx,cy,r:42,fill:"currentColor","fill-opacity":.3});
+  glow.style.filter="blur(11px)";starG.appendChild(glow);
+  const star=mk("polygon",{points:starPts(cx,cy,2.9),fill:"currentColor","fill-opacity":.2,
+    stroke:"currentColor","stroke-width":2.6,"stroke-linejoin":"round"},"starcore");
+  star.style.transformBox="fill-box";star.style.transformOrigin="center";
+  starG.appendChild(star);svg.appendChild(starG);
+}
+
+function build(){
+  const svg=el("csvg");
+  [...svg.querySelectorAll("g,polygon,line,circle,polyline")].forEach(n=>n.remove());
+  drawTree(svg, TOP, 0);        // top constellation ignites first
+  drawTree(svg, BOT, 0.5);      // bottom follows a beat later
+}
+build();
+
+// starfield
+function shadows(n){const o=[];for(let i=0;i<n;i++){
+  const x=Math.floor(Math.random()*2560),y=Math.floor(Math.random()*1440);
+  let c="#fff";const r=Math.random();if(r>.9)c="var(--star)";else if(r>.8)c="var(--gold)";
+  o.push(`${x}px ${y}px ${c}`);o.push(`${x}px ${y+1440}px ${c}`);}return o.join(",");}
+function makeStars(){el("sl1").style.boxShadow=shadows(600);
+  el("sl2").style.boxShadow=shadows(520);el("sl3").style.boxShadow=shadows(300);}
+makeStars();
+
+const bgs=["dark","transparent"];let bi=0;
+el("bgBtn").onclick=()=>{bi=(bi+1)%bgs.length;document.body.classList.remove("dark","transparent");
+  document.body.classList.add(bgs[bi]);el("bgBtn").textContent="BG: "+bgs[bi];};
+el("treeSize").addEventListener("input",e=>{document.documentElement.style.setProperty("--tscale",(+e.target.value/100).toFixed(2));el("treeSizeNum").value=e.target.value;});
+el("treeSizeNum").addEventListener("input",e=>{document.documentElement.style.setProperty("--tscale",(+e.target.value/100).toFixed(2));el("treeSize").value=e.target.value;});
+el("txtX").addEventListener("input",e=>{document.documentElement.style.setProperty("--tx",e.target.value+"vw");el("txtXNum").value=e.target.value;});
+el("txtY").addEventListener("input",e=>{document.documentElement.style.setProperty("--ty",e.target.value+"vh");el("txtYNum").value=e.target.value;});
+el("txtXNum").addEventListener("input",e=>{document.documentElement.style.setProperty("--tx",e.target.value+"vw");el("txtX").value=e.target.value;});
+el("txtYNum").addEventListener("input",e=>{document.documentElement.style.setProperty("--ty",e.target.value+"vh");el("txtY").value=e.target.value;});
+function restart(){
+  makeStars();
+  build();  // recreates all SVG content with fresh inline animations
+  // reset only the static, CSS-animated overlay elements (not the rebuilt SVG)
+  const nodes=document.querySelectorAll(".scene,.coreglow,.titlewrap,.t-shine");
+  nodes.forEach(x=>x.style.animation="none");
+  void document.body.offsetWidth;
+  nodes.forEach(x=>x.style.animation="");
+}
+el("replayBtn").onclick=restart;
+el("hideBtn").onclick=()=>{el("controls").classList.add("hidden");el("showAgain").style.display="block";};
+el("showAgain").onclick=()=>{el("controls").classList.remove("hidden");el("showAgain").style.display="none";};
+</script>
+</body>
+</html>
