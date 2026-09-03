@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arcoer Nexus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05040c; --ink:#ece9f5; --dim:#a9a3c4; --faint:#6f6a8c;
+    --star:#5BE7C4; --gem:#A855F7; --gold:#FFD678; --line:#221c3d;
+    --star-glow:#5BE7C433; --gem-glow:#A855F733; --gold-glow:#FFD67833;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:'Outfit',system-ui,sans-serif;
+    line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .sky{position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at 50% 0%,#140f2e,var(--bg) 60%)}
+  .sky b{position:absolute;width:2px;height:2px;border-radius:50%}
+  .wrap{max-width:900px;margin:0 auto;padding:0 24px}
+
+  /* top bar with toggles */
+  nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(12px);background:#05040cd6;border-bottom:1px solid var(--line)}
+  nav .row{max-width:1040px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:16px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;margin-right:auto}
+  .brand svg{width:24px;height:24px;filter:drop-shadow(0 0 6px var(--star-glow))}
+  .toggle{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#0c0a1c}
+  .toggle button{font-family:inherit;font-size:13px;font-weight:600;color:var(--dim);background:transparent;
+    border:none;padding:8px 13px;cursor:pointer;transition:.18s}
+  .toggle button.on{background:#241d47;color:var(--ink)}
+  .toggle button:hover:not(.on){color:var(--ink)}
+  .toggle .lg.on{color:var(--gold)}
+  @media(max-width:640px){.brand span{display:none}.toggle button{padding:8px 10px}}
+
+  header{padding:70px 0 44px;text-align:center;position:relative}
+  .halo{position:absolute;left:50%;top:34%;width:70vh;height:70vh;transform:translate(-50%,-50%);
+    border-radius:50%;background:radial-gradient(circle,var(--star-glow),transparent 62%);opacity:.5;pointer-events:none}
+  header h1{font-size:clamp(42px,8vw,80px);font-weight:800;line-height:.95;color:var(--gold);
+    text-shadow:0 0 30px var(--gold-glow);position:relative}
+  header h1 .n{display:block;font-weight:200;letter-spacing:.12em}
+  header .tag{color:var(--dim);font-size:clamp(16px,2.4vw,21px);margin-top:20px;position:relative}
+  .stats{display:flex;gap:28px;justify-content:center;margin-top:28px;flex-wrap:wrap;position:relative}
+  .stats div .n{font-size:26px;font-weight:700;color:var(--star)}
+  .stats div .l{font-size:12px;color:var(--faint)}
+
+  section{padding:52px 0;border-top:1px solid var(--line)}
+  .eyebrow{font-size:13px;font-weight:600;color:var(--star);margin-bottom:8px}
+  h2{font-size:clamp(25px,4vw,34px);font-weight:700;line-height:1.15}
+  p.body{color:var(--dim);font-size:16.5px;margin-top:14px}
+  p.body b{color:var(--ink);font-weight:600}
+
+  .feature{display:flex;gap:18px;margin-top:26px;align-items:flex-start}
+  .feature .ic{font-size:26px;flex:0 0 auto;width:50px;height:50px;border-radius:13px;
+    display:flex;align-items:center;justify-content:center;background:#0e0b20;border:1px solid var(--line)}
+  .feature h3{font-size:19px;font-weight:600}
+  .feature p{color:var(--dim);font-size:15px;margin-top:6px}
+  .techname{display:inline-block;margin-top:9px;font-size:12.5px;color:var(--faint);
+    background:#0c0a1c;border:1px solid var(--line);border-radius:20px;padding:4px 12px}
+  .techname b{color:var(--star);font-weight:600}
+  .chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+  .chip{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#0c0a1c;min-width:150px;flex:1}
+  .chip .k{font-size:12px;color:var(--gem);font-weight:600}
+  .chip .v{font-weight:600;margin-top:4px;font-size:15px}
+  .chip .d{font-size:12.5px;color:var(--faint);margin-top:4px}
+
+  /* the embedded 3D model */
+  .room{margin-top:28px;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    background:#05040c;aspect-ratio:16/10;position:relative}
+  .room iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;z-index:2;background:#05040c}
+  .room .fb{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:13px;text-align:center;padding:20px}
+
+  footer{padding:46px 0 70px;border-top:1px solid var(--line);color:var(--faint);font-size:13.5px;text-align:center}
+  footer b{color:var(--gold)}
+  .hidden{display:none!important}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="sky" id="sky"></div>
+
+<nav><div class="row">
+  <span class="brand"><svg viewBox="0 0 40 40"><polygon points="20,2 26,14 38,20 26,26 20,38 14,26 2,20 14,14" fill="none" stroke="#5BE7C4" stroke-width="2.5" stroke-linejoin="round"/></svg><span>Arcoer Nexus</span></span>
+  <div class="toggle" id="viewTog">
+    <button data-view="plain">Story</button><button data-view="tech">Technical</button>
+  </div>
+  <div class="toggle" id="langTog">
+    <button class="lg" data-lang="en">EN</button><button class="lg" data-lang="es">ES</button>
+  </div>
+</div></nav>
+
+<header>
+  <div class="halo"></div>
+  <h1>Arcoer <span class="n">Nexus</span></h1>
+  <div class="tag" id="tag">Where 14 Elements Shine Like Magic</div>
+  <div class="stats">
+    <div><div class="n">14</div><div class="l" id="s1">member elements</div></div>
+    <div><div class="n">66</div><div class="l" id="s2">lights</div></div>
+    <div><div class="n">5</div><div class="l" id="s3">processors</div></div>
+  </div>
+</header>
+
+<div id="content"></div>
+
+<!-- 3D model, shown in both views -->
+<section id="try"><div class="wrap">
+  <div class="eyebrow" id="tryEye">Try it</div>
+  <h2 id="tryH">Build the Tree yourself.</h2>
+  <p class="body" id="tryP">Orbit the device, open a box, and click an element — it flies out and connects to a slot, and the screen builds up the Tree of Arcoer live.</p>
+  <div class="room">
+    <iframe src="arcoer_3d_room.html" title="Interactive Arcoer Nexus" loading="lazy" allow="fullscreen"></iframe>
+    <div class="fb">Place <b style="margin:0 5px">arcoer_3d_room.html</b> beside this page (and host it) to load the interactive model.</div>
+  </div>
+</div></section>
+
+<footer><div class="wrap" id="foot"></div></footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const qp=new URLSearchParams(location.search);
+let VIEW=qp.get('view')==='tech'?'tech':(qp.get('view')==='plain'?'plain':'plain');
+let LANG=qp.get('lang')==='es'?'es':'en';
+
+// starfield
+(()=>{let s="";for(let i=0;i<200;i++){const x=(Math.random()*100).toFixed(2),y=(Math.random()*100).toFixed(2);
+  const r=Math.random();const c=r>.9?"#5BE7C4":r>.82?"#FFD678":"#fff";
+  s+=`<b style="left:${x}%;top:${y}%;background:${c};opacity:${(.2+Math.random()*.7).toFixed(2)}"></b>`;}$("sky").innerHTML=s;})();
+
+// ── content model: [view][lang] ──
+const C={
+ plain:{
+  en:{tag:"Where 14 Elements Shine Like Magic",s:["member elements","lights","brains inside"],
+    tryEye:"Try it",tryH:"Build the Tree yourself.",tryP:"Open a box, pick an element, and watch it connect to the device and light up — just like the real thing.",
+    foot:"Arcoer Nexus — a custom K-pop companion, built by Vincent. Circuit board sponsored by <b>JLCPCB</b>.",
+    sections:[
+     {eye:"What it is",h:"A little home for your favourite artists.",
+      body:"Arcoer Nexus is a desk gadget for K-pop fans. You get <b>fourteen collectible tokens</b> — one per member of BTS and CORTIS. Place a token and that member's element wakes up: the screen shows their card, the lights glow in their colour, and it all lights up like a tiny constellation. It plays music, spins a little record, and even makes your <b>ARMY Bomb</b> glow along with it."},
+     {eye:"How it works",h:"The magic, explained simply.",feats:[
+      {ic:"📺",h:"The screen",p:"A colour screen shows the whole experience — member cards, the glowing artwork, and the modes.",t:"Really a <b>3.5″ colour display</b>."},
+      {ic:"💡",h:"The lights",p:"Strips of tiny lights wrap the device; each can be any colour, so every member glows in their own shade.",t:"Really <b>66 individually-controllable LEDs</b>."},
+      {ic:"🎫",h:"The tokens",p:"Each member has a token you place on the device. It instantly knows which one — like tap-to-pay on your phone.",t:"Really <b>NFC tags</b> read by a sensor."},
+      {ic:"🔊",h:"The sound",p:"Plays music streamed from your phone or from a memory card, with a part of the device dedicated just to sound.",t:"Really a <b>Bluetooth speaker chip</b> + memory-card player."},
+      {ic:"🪄",h:"Lightstick sync",p:"Your ARMY Bomb glows in sync — no wires, no pairing. They talk through the air and stay matched.",t:"Really a <b>wireless radio link</b> that re-connects itself."},
+      {ic:"🧠",h:"The brains",p:"Five processors share the work — one for the screen, one for sound, helpers for the rest — so it never slows down.",t:"Really <b>five microcontrollers</b> sharing the load."}]},
+     {eye:"How it was made",h:"Built by hand, from nothing.",
+      body:"The case was designed in 3D and printed at home. The circuit board was custom-designed and made specially for this project. Every wire, solder joint, and line of software was done in-house."}
+    ]},
+  es:{tag:"Donde 14 Elementos Brillan Como Magia",s:["elementos de miembros","luces","cerebros dentro"],
+    tryEye:"Pruébalo",tryH:"Construye el Árbol tú mismo.",tryP:"Abre una caja, elige un elemento y míralo conectarse al dispositivo e iluminarse — como en la realidad.",
+    foot:"Arcoer Nexus — un compañero K-pop hecho a medida por Vincent. Placa patrocinada por <b>JLCPCB</b>.",
+    sections:[
+     {eye:"Qué es",h:"Un pequeño hogar para tus artistas favoritos.",
+      body:"Arcoer Nexus es un aparato de escritorio para fans del K-pop. Tienes <b>catorce fichas coleccionables</b> — una por cada miembro de BTS y CORTIS. Coloca una ficha y el elemento de ese miembro despierta: la pantalla muestra su tarjeta, las luces brillan en su color, y todo se ilumina como una pequeña constelación. Reproduce música, gira un pequeño disco, y hasta hace brillar tu <b>ARMY Bomb</b>."},
+     {eye:"Cómo funciona",h:"La magia, explicada sencillamente.",feats:[
+      {ic:"📺",h:"La pantalla",p:"Una pantalla a color muestra toda la experiencia — tarjetas de miembros, el arte brillante y los modos.",t:"En realidad una <b>pantalla a color de 3.5″</b>."},
+      {ic:"💡",h:"Las luces",p:"Tiras de pequeñas luces rodean el dispositivo; cada una puede ser de cualquier color.",t:"En realidad <b>66 LEDs controlables uno a uno</b>."},
+      {ic:"🎫",h:"Las fichas",p:"Cada miembro tiene una ficha que colocas en el dispositivo. Sabe al instante cuál es — como el pago sin contacto.",t:"En realidad <b>etiquetas NFC</b> leídas por un sensor."},
+      {ic:"🔊",h:"El sonido",p:"Reproduce música desde tu teléfono o una tarjeta de memoria, con una parte dedicada solo al sonido.",t:"En realidad un <b>chip de altavoz Bluetooth</b> + reproductor."},
+      {ic:"🪄",h:"Sincronía con lightstick",p:"Tu ARMY Bomb brilla en sincronía — sin cables ni emparejar. Se comunican por el aire.",t:"En realidad un <b>enlace de radio inalámbrico</b> que se reconecta solo."},
+      {ic:"🧠",h:"Los cerebros",p:"Cinco procesadores reparten el trabajo — uno para la pantalla, uno para el sonido — para que nunca se ralentice.",t:"En realidad <b>cinco microcontroladores</b> compartiendo la carga."}]},
+     {eye:"Cómo se hizo",h:"Hecho a mano, desde cero.",
+      body:"La carcasa se diseñó en 3D y se imprimió en casa. La placa de circuito se diseñó a medida y se fabricó especialmente para este proyecto. Cada cable, soldadura y línea de código se hizo internamente."}
+    ]}
+ },
+ tech:{
+  en:{tag:"Fourteen elements · five processors · one custom board",s:["member elements","addressable LEDs","firmware targets"],
+    tryEye:"Try it",tryH:"Build the Tree yourself.",tryP:"Orbit the device, open a box, and click an element — it flies out and connects to a slot; the screen renders the Tree of Arcoer live, mirroring the firmware.",
+    foot:"Arcoer Nexus — engineered by Vincent. PCB fabrication sponsored by <b>JLCPCB</b> · OSHWLab Stars.",
+    sections:[
+     {eye:"Overview",h:"A physical home for a digital fandom.",
+      body:"Fourteen NFC member tokens drive a living desk device. Placing a token wakes its element: the ST7796 TFT shows the member card, SK9822 LEDs bloom in that member's colour, and the board reacts. It streams audio over Bluetooth, spins records in a vinyl mode, and mirrors its light show onto an <b>ARMY Bomb Ver. 4</b> over ESP-NOW. Enclosure, PCB, and firmware across five processors are all custom."},
+     {eye:"System architecture",h:"Five processors, one nervous system.",chips:[
+      {k:"ESP32-S3",v:"Main UI & brain",d:"LVGL 8.3 on the TFT, Wi-Fi, MQTT, orchestration"},
+      {k:"ESP32-WROOM",v:"Audio engine",d:"Bluetooth A2DP sink, SD WAV playback, I²S"},
+      {k:"2× Pico W",v:"Token bridges",d:"Manage the physical slots and hand-off"},
+      {k:"14× ATtiny85",v:"The tokens",d:"One chip per member token"},
+      {k:"WROOM bridge",v:"Lightstick link",d:"Standalone ESP-NOW radio to the ARMY Bomb"}]},
+     {eye:"Subsystems",h:"Every element, in detail.",feats:[
+      {ic:"📺",h:"Display & UI",p:"480×320 ST7796 running LVGL 8.3 with the custom Tree-of-Arcoer language — gems, orbiting stars, fading trails. Custom 16 MB partition maximises app space."},
+      {ic:"🔊",h:"Audio",p:"Dedicated ESP32-WROOM: Bluetooth A2DP sink and SD WAV playback over I²S to a MAX98357A amp, so the UI never stutters."},
+      {ic:"💡",h:"Lighting",p:"66× SK9822 addressable LEDs via FastLED, each element in its member colour, with a learned power ceiling to avoid brownouts."},
+      {ic:"🎫",h:"NFC tokens",p:"PN532 reader detects which of the 14 ATtiny85 tokens is placed; two Pico W bridges manage the slot hand-off."},
+      {ic:"🪄",h:"Lightstick sync",p:"Standalone WROOM bridge mirrors the light show onto the ARMY Bomb Ver. 4 over ESP-NOW, re-arming on channel changes and silence."},
+      {ic:"🌐",h:"Connectivity",p:"S3 joins Wi-Fi and speaks MQTT, with a web dashboard and a filming director console for per-element control."}]},
+     {eye:"Hardware",h:"Designed, routed, and built from scratch.",
+      body:"Enclosure modelled in Fusion 360, printed on a Creality Ender 3 V3. Custom PCB designed in EasyEDA Pro and fabricated by JLCPCB, with a hand-written 16 MB partition table (no OTA/filesystem) that maximises application space beyond every stock preset."}
+    ]},
+  es:{tag:"Catorce elementos · cinco procesadores · una placa a medida",s:["elementos de miembros","LEDs direccionables","destinos de firmware"],
+    tryEye:"Pruébalo",tryH:"Construye el Árbol tú mismo.",tryP:"Orbita el dispositivo, abre una caja y haz clic en un elemento — sale volando y se conecta a una ranura; la pantalla dibuja el Árbol de Arcoer en vivo, reflejando el firmware.",
+    foot:"Arcoer Nexus — diseñado por Vincent. Fabricación de PCB patrocinada por <b>JLCPCB</b> · OSHWLab Stars.",
+    sections:[
+     {eye:"Resumen",h:"Un hogar físico para un fandom digital.",
+      body:"Catorce tokens NFC de miembros controlan un dispositivo de escritorio vivo. Colocar un token despierta su elemento: la pantalla TFT ST7796 muestra la tarjeta del miembro, los LEDs SK9822 florecen en su color, y la placa reacciona. Transmite audio por Bluetooth, gira discos en modo vinilo, y refleja su espectáculo de luces en un <b>ARMY Bomb Ver. 4</b> por ESP-NOW. Carcasa, PCB y firmware en cinco procesadores, todo a medida."},
+     {eye:"Arquitectura del sistema",h:"Cinco procesadores, un sistema nervioso.",chips:[
+      {k:"ESP32-S3",v:"UI principal y cerebro",d:"LVGL 8.3 en la TFT, Wi-Fi, MQTT, orquestación"},
+      {k:"ESP32-WROOM",v:"Motor de audio",d:"Receptor Bluetooth A2DP, reproducción WAV desde SD, I²S"},
+      {k:"2× Pico W",v:"Puentes de tokens",d:"Gestionan las ranuras físicas y el traspaso"},
+      {k:"14× ATtiny85",v:"Los tokens",d:"Un chip por token de miembro"},
+      {k:"Puente WROOM",v:"Enlace lightstick",d:"Radio ESP-NOW independiente hacia el ARMY Bomb"}]},
+     {eye:"Subsistemas",h:"Cada elemento, en detalle.",feats:[
+      {ic:"📺",h:"Pantalla y UI",p:"ST7796 480×320 con LVGL 8.3 y el lenguaje visual Árbol-de-Arcoer — gemas, estrellas en órbita, estelas. Partición personalizada de 16 MB maximiza el espacio de la app."},
+      {ic:"🔊",h:"Audio",p:"ESP32-WROOM dedicado: receptor Bluetooth A2DP y reproducción WAV desde SD por I²S a un amplificador MAX98357A, para que la UI nunca se trabe."},
+      {ic:"💡",h:"Iluminación",p:"66× LEDs direccionables SK9822 con FastLED, cada elemento en su color, con un techo de potencia aprendido para evitar caídas."},
+      {ic:"🎫",h:"Tokens NFC",p:"El lector PN532 detecta cuál de los 14 tokens ATtiny85 está colocado; dos puentes Pico W gestionan el traspaso."},
+      {ic:"🪄",h:"Sincronía lightstick",p:"Un puente WROOM independiente refleja el espectáculo en el ARMY Bomb Ver. 4 por ESP-NOW, rearmándose ante cambios de canal y silencio."},
+      {ic:"🌐",h:"Conectividad",p:"El S3 se une al Wi-Fi y habla MQTT, con un panel web y una consola de dirección para control por elemento al filmar."}]},
+     {eye:"Hardware",h:"Diseñado, ruteado y construido desde cero.",
+      body:"Carcasa modelada en Fusion 360, impresa en una Creality Ender 3 V3. PCB personalizada diseñada en EasyEDA Pro y fabricada por JLCPCB, con una tabla de particiones de 16 MB escrita a mano (sin OTA/sistema de archivos) que maximiza el espacio de la aplicación más allá de cualquier preajuste."}
+    ]}
+ }
+};
+
+function render(){
+  const t=C[VIEW][LANG];
+  $("tag").innerHTML=t.tag;
+  $("s1").textContent=t.s[0];$("s2").textContent=t.s[1];$("s3").textContent=t.s[2];
+  $("tryEye").textContent=t.tryEye;$("tryH").textContent=t.tryH;$("tryP").textContent=t.tryP;
+  $("foot").innerHTML=t.foot;
+  // sections
+  let html="";
+  t.sections.forEach(sec=>{
+    html+=`<section><div class="wrap"><div class="eyebrow">${sec.eye}</div><h2>${sec.h}</h2>`;
+    if(sec.body)html+=`<p class="body">${sec.body}</p>`;
+    if(sec.chips){html+=`<div class="chips">`;sec.chips.forEach(c=>html+=`<div class="chip"><div class="k">${c.k}</div><div class="v">${c.v}</div><div class="d">${c.d}</div></div>`);html+=`</div>`;}
+    if(sec.feats){sec.feats.forEach(f=>{html+=`<div class="feature"><div class="ic">${f.ic}</div><div><h3>${f.h}</h3><p>${f.p}</p>${f.t?`<span class="techname">${f.t}</span>`:''}</div></div>`;});}
+    html+=`</div></section>`;
+  });
+  $("content").innerHTML=html;
+  // toggle button states
+  document.querySelectorAll('#viewTog button').forEach(b=>b.classList.toggle('on',b.dataset.view===VIEW));
+  document.querySelectorAll('#langTog button').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));
+  document.documentElement.lang=LANG;
+}
+document.querySelectorAll('#viewTog button').forEach(b=>b.onclick=()=>{VIEW=b.dataset.view;render();});
+document.querySelectorAll('#langTog button').forEach(b=>b.onclick=()=>{LANG=b.dataset.lang;render();});
+render();
+</script>
+</body>
+</html>
